@@ -4,7 +4,7 @@ cipher = 'crypt.txt'
 
 def file2String(f):
     with open(f, 'r') as f:
-        return f.read().replace('\n', '')
+        return f.read()#.replace('\n', '')
 
 def findKeyLength(cipher):
     l_coinc_idx = []
@@ -21,7 +21,7 @@ def findKeyLength(cipher):
         print(avg)
         l_coinc_idx.append(avg)
     maximum = max(l_coinc_idx)
-    print(l_coinc_idx.index(maximum))
+    print(l_coinc_idx.index(maximum)+1)
     print(maximum)
     return l_coinc_idx.index(maximum)+1
 
@@ -40,7 +40,8 @@ def simpleguess(l,mf,cipher):
   print(cipher)
   for a in range(0,l):
     subseq = cipher[a::l]
-    print(subseq)
+    print(map(lambda x: ord(x), subseq))
+
     freqs = [0] * 128
     for ch in subseq:
       freqs[ord(ch)]+=1
@@ -66,6 +67,8 @@ def ICMguess(l,cipher):
       icms.append(icm(freqs[0], shift))
       # shift Ci one char
       shift.append(shift.pop(0))
+    print(max(icms))
+    print(icms.index(max(icms)))
     keyshifts.append(icms.index(max(icms)))
   return keyshifts
     
@@ -76,14 +79,16 @@ def icm(x,y):
     return sum( map(lambda (a,b): (a/lx) * (b/ly), zip(x,y)) ) / lx*ly
 
 def possible_keys(keyshifts):
-  return map(lambda y: ''.join(map(lambda x: chr(x+y), keyshifts)),range(0,128))
+  return map(lambda y: ''.join(map(lambda x: chr((x+y)%128), keyshifts)),range(32,127+32))
     
 
     
 s = file2String(cipher)
 l = findKeyLength(s)
-#simpleguess(l,' ',s)
-keyshifts = ICMguess(l,s)
+simpleguess(6,' ',s)
+
+keyshifts = ICMguess(6,s)
+print(keyshifts)
 for key in possible_keys(keyshifts):
     print(key)
   

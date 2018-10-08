@@ -3,7 +3,7 @@ import string
 plainfile = 'plain.txt'
 cryptfile = 'crypt.txt'
 
-key = 'ass'
+key = 'nigger'
 
 def crypt(plain, cipher, key):
     with open(cipher, "w") as cipher_file:
