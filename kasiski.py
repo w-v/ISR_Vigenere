@@ -23,7 +23,7 @@ def findKeyLength(cipher):
     maximum = max(l_coinc_idx)
     print(l_coinc_idx.index(maximum))
     print(maximum)
-    return l_coinc_idx.index(maximum)
+    return l_coinc_idx.index(maximum)+1
 
 def coinc_idx(substr):
     freq = {}
@@ -38,8 +38,8 @@ def coinc_idx(substr):
 def simpleguess(l,mf,cipher):
   key = ""
   print(cipher)
-  for a in range(0,l+1):
-    subseq = cipher[a::l+1]
+  for a in range(0,l):
+    subseq = cipher[a::l]
     print(subseq)
     freqs = [0] * 128
     for ch in subseq:
@@ -47,10 +47,44 @@ def simpleguess(l,mf,cipher):
     key+=chr( ( freqs.index(max(freqs)) - ord(mf) )%128 )
     print(freqs)
   print(key)
+  return key
       
+
+def ICMguess(l,cipher):
+  freqs = []
+  shift = []
+  keyshifts = []
+  for a in range(0,l):
+    substr = cipher[a::l]
+    freqs.append([0] * 128)
+    for ch in substr:
+      freqs[a][ord(ch)]+=1
+    icms = []
+    # make a copy
+    shift = list(freqs[a])  
+    for sh in range(0,128):
+      icms.append(icm(freqs[0], shift))
+      # shift Ci one char
+      shift.append(shift.pop(0))
+    keyshifts.append(icms.index(max(icms)))
+  return keyshifts
+    
+
+def icm(x,y):
+    lx = float(len(x))
+    ly = float(len(y))
+    return sum( map(lambda (a,b): (a/lx) * (b/ly), zip(x,y)) ) / lx*ly
+
+def possible_keys(keyshifts):
+  return map(lambda y: ''.join(map(lambda x: chr(x+y), keyshifts)),range(0,128))
+    
+
+    
 s = file2String(cipher)
 l = findKeyLength(s)
-simpleguess(l,' ',s)
-
+#simpleguess(l,' ',s)
+keyshifts = ICMguess(l,s)
+for key in possible_keys(keyshifts):
+    print(key)
   
 #print(coinc_idx(s))
