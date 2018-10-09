@@ -1,46 +1,64 @@
+# -*- coding: utf-8 -*-
 import string
+import argparse
+import sys
 
-plainfile = 'plain.txt'
-cryptfile = 'crypt.txt'
+DEFAULT_KEY = 'noguess!'
+CHARSET_SIZE = 128
 
-key = 'nigger'
+# command line argument parser setup
+def makeParser():
+    parser = argparse.ArgumentParser(prog="vigenere")
+    parser.add_argument('command', choices=['c', 'd'])
+    parser.add_argument('file_in', type=argparse.FileType('r'))
+    parser.add_argument('file_out', type=argparse.FileType('w'))
+    parser.add_argument('key', type=str, default=DEFAULT_KEY)
+    return parser
 
-def crypt(plain, cipher, key):
-    with open(cipher, "w") as cipher_file:
-        with open(plain, "r") as plain_file:
-            i = 0
-            while True:
-                c = plain_file.read(1)
-                if not c:
-                    print "End of file"
-                    break
-                print(key[i%len(key)])
-                cipher_file.write(charcrypt(c,key[i%len(key)]));
-                print "writing"
-                i+=1
-        plain_file.close()
-    cipher_file.close()
+# encrypt string plain with key using Vigenere's cipher
+def encrypt(plain, key):
+  i = 0
+  s = ""
+  for c in plain:
+    s+=charencrypt(c,key[i%len(key)]);
+    i+=1
+  return s
 
-def decrypt(plain, cipher, key):
-    with open(cipher, "r") as cipher_file:
-        with open(plain, "w") as plain_file:
-            i = 0
-            while True:
-                c = cipher_file.read(1)
-                if not c:
-                    print "End of file"
-                    break
-                plain_file.write(chardecrypt(c,key[i%len(key)]));
-                i+=1
+# decrypt string cipher with key using Vigenere's cipher
+def decrypt(cipher, key):
+  i = 0
+  s = ""
+  for c in cipher:
+    s+=chardecrypt(c,key[i%len(key)]);
+    i+=1
+  return s
 
-def charcrypt(c,k):
-    return chr((ord(c)+ord(k))%128)
-    
+def decrypt_file(plain, cipher, key):
+    plain.write(decrypt(cipher.read(), key))
+
+def encrypt_file(plain, cipher, key):
+    cipher.write(encrypt(plain.read(), key))
+
+# shifts char c forward by char k index in the ASCII table
+def charencrypt(c,k):
+    return chr((ord(c)+ord(k))%CHARSET_SIZE)
+
+# shifts char c back by char k index in the ASCII table
 def chardecrypt(c,k):
-    return chr((ord(c)-ord(k))%128)
+    return chr((ord(c)-ord(k))%CHARSET_SIZE)
 
-  
+if __name__ == '__main__':
+    # do not run when being imported
 
-crypt(plainfile, cryptfile, key)
-decrypt('decrypt.txt', cryptfile, key)
+    # command line argument parsing
+    arg_parser = makeParser();
+    cmd_args = sys.argv[1:]  
+    args = arg_parser.parse_args(cmd_args)
 
+    if args.command == 'c':
+        encrypt_file(args.file_in, args.file_out, args.key)
+    else:
+        decrypt_file(args.file_out, args.file_in, args.key)
+
+    args.file_in.close()
+    args.file_out.close()

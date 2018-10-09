@@ -1,3 +1,5 @@
 /*.txt
-!/plain.txt
+!/cat.txt
+!/dog.txt
+*.swp
 *.pdf
