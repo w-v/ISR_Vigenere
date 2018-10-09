@@ -10,8 +10,8 @@ CHARSET_SIZE = 128
 def makeParser():
     parser = argparse.ArgumentParser(prog="vigenere")
     parser.add_argument('command', choices=['c', 'd'], help="c for encrypting, d for decrypting")
-    parser.add_argument('file_in', type=argparse.FileType('r'), help="input file")
-    parser.add_argument('file_out', type=argparse.FileType('w'), help="output file")
+    parser.add_argument('file_in', type=argparse.FileType('r'), help="input file")              # Opens file and gives it in the object returned by parse_args()
+    parser.add_argument('file_out', type=argparse.FileType('w'), help="output file")            #
     parser.add_argument('key', type=str, default=DEFAULT_KEY)
     return parser
 
@@ -52,7 +52,7 @@ if __name__ == '__main__':
 
     # command line argument parsing
     arg_parser = makeParser();
-    cmd_args = sys.argv[1:]  
+    cmd_args = sys.argv[1:]         # don't take the name of the script
     args = arg_parser.parse_args(cmd_args)
 
     if args.command == 'c':
