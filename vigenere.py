@@ -9,9 +9,9 @@ CHARSET_SIZE = 128
 # command line argument parser setup
 def makeParser():
     parser = argparse.ArgumentParser(prog="vigenere")
-    parser.add_argument('command', choices=['c', 'd'])
-    parser.add_argument('file_in', type=argparse.FileType('r'))
-    parser.add_argument('file_out', type=argparse.FileType('w'))
+    parser.add_argument('command', choices=['c', 'd'], help="c for encrypting, d for decrypting")
+    parser.add_argument('file_in', type=argparse.FileType('r'), help="input file")
+    parser.add_argument('file_out', type=argparse.FileType('w'), help="output file")
     parser.add_argument('key', type=str, default=DEFAULT_KEY)
     return parser
 

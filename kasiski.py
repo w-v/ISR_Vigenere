@@ -12,11 +12,14 @@ MAX_KEY_LENGTH = 10
 # command line argument parser configuration
 def make_parser():
     parser = argparse.ArgumentParser(prog="kasiski")
-    parser.add_argument('file', type=file)
-    parser.add_argument('-t', '--typical-file', type=file)
-    parser.add_argument('-m', '--most-frequent-char', type=str)
-    parser.add_argument('-s', '--simple-guess', action="store_true")
-    parser.add_argument('-i', '--icm-guess', action="store_true")
+    parser.add_argument('file', type=file, help="file on which the cryptanalysis is performed")
+    parser.add_argument('-t', '--typical-file', type=file, help="plain text file of similar character distribution\
+            than the encrypted plain text.\n With icm guess (-i), is used to guess the offset of the key's first character given the shifts\
+            of every character to the first one. Is compared to the plaintext of every possible key by computing their\
+            icm \n With simple guess (-s), is used to compute the most frequent char\n Is not compatible with -m")
+    parser.add_argument('-m', '--most-frequent-char', type=str, help="most frequent character in the plain text, is used to guess the key using simple guess, and to choose one from possible keys using icm guess\n Is not compatible with -t")
+    parser.add_argument('-s', '--simple-guess', action="store_true", help="Guess the key using the simple guess method\n Only assumes a most frequent character, and deduces the key from that")
+    parser.add_argument('-i', '--icm-guess', action="store_true", help="Guess the key using the icm guess method\n Actually try and match frequency distributions of sub sequences corresponding to key characters in order to find a set of possible keys, then use the specified (default: -m ' ') method to choose the most probable key")
     return parser
 
 # some argument combinations are not supported
@@ -89,7 +92,8 @@ def icm_guess(l,cipher):
   return keyshifts
     
 
-# computes the icm between strings x and y
+
+# computes the icm between frequency distributions x and y
 def icm(x,y):
     lx = float(len(x))
     ly = float(len(y))
@@ -101,9 +105,10 @@ def icm(x,y):
 # text and the provided typical plain text 
 def icm_shift_guess(keys, cipher_text, typ_file):
     icms = []
+    freqs_typ = get_freqs(typ_file)
     for k in keys:
-        plain = vigenere.decrypt(cipher_text, k)
-        icms.append(icm(plain, typ_file))
+        freqs_plain = get_freqs(decrypt(cipher_text, k))
+        icms.append(icm(freqs_plain, freqs_typ))
     return keys[icms.index(max(icms))]          # return the key maximising the icm
 
 # given a cipher text, the character shifts of the key and the most
@@ -184,7 +189,7 @@ else:
 
     if args.typical_file != None :
         # guess the correct shifts using a typical plain text file
-        key = icm_shift_guess(possible_keys, args.typical_file.read())
+        key = icm_shift_guess(possible_keys, cipher_text, args.typical_file.read())
     else:
         # guess the correct shifts using the most frequent char
         if args.most_frequent_char != None :
