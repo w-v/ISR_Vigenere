@@ -63,7 +63,13 @@ Cette méthode est implémentée par la fonction `simple_guess`. Pour chaque sou
 
 Pour la deuxième méthode, on voudra s'appuyer sur l'indice de coincidence mutuel. Cet indice est calculé sur la distribution de fréquence de deux messages et donne la probabilité qu'un caractère du premier soit égal à un caractère du deuxième. Il permet de comparer les distributions de fréquence de sorte à déterminer si elles sont similaires caractère à caractère.
 Les sous-séquences peuvent donc être comparées entre elles pour déterminer le décalage qui rendra une sous-séquence similaire à une autre du point de vue des fréquences de chaque caractère.
-Pour implémenter cette méthode, la fonction `icm_guess` calcule les distributions de fréquence des sous-séquence, puis pour chaque sous séquence, calcule son indice de coincidence mutuel avec   
+Pour implémenter cette méthode, la fonction `icm_guess` calcule les distributions de fréquence des sous-séquences, puis pour chaque décalage possible des d'une distribution, calcule son indice de coincidence mutuel avec la distribution de la première sous séquence. Est retenu pour chaque sous-séquence le décalage qui maximise cette indice. Ainsi sont obtenus les décalages des caractères de la clé par rapport au premier.
+On peut alors extraire toutes les clés possibles en donnant une valeur au premier caractère. La fonction `possible_keys` réalise ce calcul. Ne sont retenues que les clés comportant des caractères imprimables (>32 et <127).
+
+Connaissant l'ensemble des clés possibles, on adopte deux approches différentes pour déterminer la clé la plus probable.
+La première est encore une fois de supposer qu'un caractère est le plus courant dans le message clair. Cette supposition permet de trouver le premier caractère de la clé en appliquant la méthode d'analyse simple évoquée précédemment sur la première sous-séquence. Cette première approche est implémentée par la fonction `mf_shift_guess`. Elle détermine le premier caractère `shift0` de la clé d'après le caractère le plus fréquent `mf` et calcule le reste de la clé en appliquant les décalages  des autres caractères à celui du premier. 
+La deuxième approche suppose que l'on dispose d'un message clair de référence, similaire dans sa distribution de fréquence au message clair recherché. Avec ce message de référence, on peut comparer sa distribution caractère à caractère à celles des messages déchiffrés par chaque clé possible. C'est à dire calculer l'indice de coincidence mutuel entre message de référence et déchiffré pour une clé possible. La fonction `icm_shift_guess` implémente cette approche. Pour chaque clé, le déchiffré est calculé avec la fonction `decrypt` de `vigenere.py`, puis sa distribution de fréquence est comparé à celle du message de référence avec un indice de coincidence mutuel.
+La clé retournée est celle dont le déchiffré maximise cette indice de coincidence mutuel. 
 
 #### Interface en ligne de commande
 
@@ -99,3 +105,4 @@ optional arguments:
                         of possible keys, then use the specified (default: -m
                         ' ') method to choose the most probable key```
 
+A également été utilisé le module argparse de Python. À noter que les options `-i` et `-s` pour chaque type de méthode de détermination de la clé ne sont pas compatibles. Les options `-m` et `-t` permettent de choisir une des deux approche de détermination de la clé la plus probable parmi les possibles dans le cas de la méthode `icm_guess`. Pour la méthode `simple_guess` ces options permettent dans un cas de donner le caractère le plus fréquent et dans l'autre de le calculer d'après le texte de référence.
